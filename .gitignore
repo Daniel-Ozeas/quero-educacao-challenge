@@ -1,0 +1,4 @@
+docker-compose.yml
+postgresql_data/
+.docker-compose.yml.swo
+.docker-compose.yml.swp
