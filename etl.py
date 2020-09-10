@@ -132,6 +132,10 @@ def cleaning_data(df):
     indexNames = df[df['uf'] == 99].index
     df.drop(indexNames, inplace=True)
 
+    # Remove some outliers from salario column
+    indexNames = df[df['salario'] > 1.5e+06].index
+    df.drop(indexNames, inplace=True)
+
     # Transform data to list to be exported to db
     df = pd.DataFrame(df)
     df = df.values.tolist()
@@ -160,6 +164,31 @@ def create_db():
     except (Exception, psycopg2.DatabaseError) as error:
         print('Error while connecting to PostgreSQL db', error)
 
+def creating_index(conn, cur, index_columns):
+    """
+    Create the index in postgres table 
+
+    Parameters: 
+    conn (class: psycopg2.extensions.connection): connector to Postgres database
+    cur (class: psycopg2.extensions.cursor): cursor to execute SQL command
+    index_columns (list): list of desired indexe column 
+
+    Returns:
+    Nothing. Just execute the command.
+    """
+    try:        
+        for index_column in index_columns:
+            index_query = f"""
+            CREATE INDEX idx_{index_column} 
+            ON public_dataset({index_column});
+            """
+            cur.execute(index_query)
+            conn.commit()
+            print(f'Index idx_{index_column} created sucessfully')
+        
+    except (Exception, psycopg2.Error) as error:
+        print('Error while creating index:', error)        
+
 def main():
     """
     Execute function to get data, clean, connect to db, create table in postgres db and insert the data cleaned.
@@ -176,11 +205,13 @@ def main():
     print('Data imported from api')
     data_cleaned = cleaning_data(data)
     print('Data cleaned')
-    
+
     # Access database, create table and insert the data
     conn, cur = create_db()
     creating_table(conn, cur, public_dataset_table_create)
     inserting_data_table(conn, cur, public_dataset_table_insert, data_cleaned)
+    index_columns = ['cbo2002_ocupacao', 'salario', 'municipio', 'subclasse']
+    creating_index(conn, cur, index_columns)
 
     if(conn):
         cur.close()
