@@ -2,15 +2,11 @@
 import requests
 import json
 import pandas as pd
-# to handle  data retrieval
 import urllib3
 from urllib3 import request
-# to handle certificate verification
 import certifi
-# to handle Postgres database
 import psycopg2
 from psycopg2 import Error
-# to plot some data
 import matplotlib.pyplot as plt
 from sql_queries import *
 
@@ -191,7 +187,7 @@ def creating_index(conn, cur, index_columns):
 
 def main():
     """
-    Execute function to get data, clean, connect to db, create table in postgres db and insert the data cleaned.
+    Executes function to get data, clean, connect to db, creates table in postgres db, inserts the data cleaned and creates indexes.
 
     Parameters: 
 
